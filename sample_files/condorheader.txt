@@ -1,0 +1,3 @@
+Executable     = /opt/gate_v6.1/bin/Linux-g++/Gate
+universe       = vanilla
+getenv = True

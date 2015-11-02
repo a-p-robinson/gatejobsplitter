@@ -1,0 +1,37 @@
+### Queue to submit to (chixstix)
+#PBS -q batch@chixstix.ph.man.ac.uk
+
+###  Log and error files
+#PBS -o OUTFILE
+#PBS -e ERRORFILE
+
+### Job name
+#PBS -N JOBNAME
+
+### Declare job non-rerunable
+#PBS -r n
+
+###    set mail notification options
+#PBS -m ae
+
+# Set up your environment
+source /home/apr/.conf_gate6.1
+
+# Set working directory
+cd WORKINGDIR
+
+# Log the start time
+echo -e "Start time                \t"    `date`   
+
+# Command to run
+/opt/gate_v6.1/bin/Linux-g++/Gate MACRO_ARGUMENTS
+
+# Log the End time
+echo
+echo ----------------------- DONE ---------------------------------
+echo
+echo -e "Time after job execution \t"     `date`
+
+exit 0
+
+

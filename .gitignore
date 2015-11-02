@@ -1,0 +1,12 @@
+# Emacs temp files
+*.*~
+*~
+
+# C/C++ objects
+*.o
+
+# svn bollocks
+.svn
+
+# Apple bullshit
+.DS_Store

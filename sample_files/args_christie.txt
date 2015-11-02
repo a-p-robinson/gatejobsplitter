@@ -1,0 +1,9 @@
+-a source Source-99mTc_Cylindrical_Phantom_x3Inserts.mac
+-a gamma_activity1 1050619.43
+-a beta_activity1 38.87
+-a gamma_activity2 985611.04
+-a beta_activity2 36.47
+-a gamma_activity3 1027551.94
+-a beta_activity3 38.02
+-a gate_install_dir /usr/local/GATE/gate_v6.1
+-a working_dir /Data/Work/STFC_SPECT_SIM/GATE6.1_ver2/tags/99mTc_Sim

@@ -1,0 +1,54 @@
+### Queue to submit to
+#PBS -q Geant4L@proton-cluster00
+
+###  Log and error files
+#PBS -o OUTFILE
+#PBS -e ERRORFILE
+
+### Job name
+#PBS -N JOBNAME
+
+### Declare job non-rerunable
+#PBS -r n
+
+###    set mail notification options
+###    a = send mail if job aborted
+###    b = send mail when job starts
+###    e = send mail when job ends
+###    n =  do not send mail
+###
+#PBS -m ae
+###
+###   mail address to send notifications too
+###
+###PBS -M phil.sharrock@physics.cr.man.ac.uk
+
+# Set up your environment
+. /Data/thisrootpbs.sh
+. /Data/Work/geant4/env_gatepbs.sh
+
+# Set working directory
+cd WORKINGDIR
+
+# Log the start time
+echo
+echo ---------------------- Job Info ------------------------------
+echo
+echo -e "Name of the working queue \t"    $PBS_QUEUE
+echo -e "Job name                  \t"    $PBS_JOBNAME
+echo -e "Job identifier            \t"    $PBS_JOBID
+echo -e "Working directory is      \t"    $PBS_O_WORKDIR
+echo -e "Running on host           \t"    `hostname`
+echo -e "Start time                \t"    `date`
+echo
+
+# Command to run
+/usr/local/GATE/gate_v6.1/bin/Linux-g++/Gate MACRO_ARGUMENTS
+
+# Log the End time
+echo
+echo ----------------------- DONE ---------------------------------
+echo
+echo -e "Time after job execution \t"     `date`
+
+exit 0
