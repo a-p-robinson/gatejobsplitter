@@ -53,10 +53,11 @@ int main(int argc, char *argv[])
   // argv[7] = number of splits
   // argv[8] = Number of angles (optional)
   // argv[9] = Requirements (optional)
+  // argv[10] = Use old (Gate 6.1) format (optional)
 
-  if (argc < 9 || argc > 11){
+  if (argc < 9 || argc > 12){
       cout << "Usage: " << endl;
-      cout << argv[0] << " macro_filename arguments_filename condor_arguments_filename InitialDir output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional)" << endl;
+      cout << argv[0] << " macro_filename arguments_filename condor_arguments_filename InitialDir output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional) Gate6.1_format=0(optional)" << endl;
       cout << endl;
       cout << "eg:" << endl;
       cout << argv[0] << " TOMO.mac args.txt condor.txt /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt)" << endl;
@@ -153,6 +154,12 @@ int main(int argc, char *argv[])
   else{
     nReqs = 1;
     requirements = "Arch == \"INTEL\" || Arch == \"x86_64\"";
+  }
+
+  // Have we asked for GATE6.1 version?
+  int oldGATE = 0;
+  if (argc == 12){
+    int oldGATE = 1;
   }
 
   // Check that the number of splits is a multiple of the total time
@@ -262,9 +269,20 @@ int main(int argc, char *argv[])
     stepBuffer.precision(10);
     stepBuffer << "\"";
     stepBuffer << macro_args;
-    stepBuffer << " -a seed auto -a time_slice " << tStep << " -a time_start 0 -a time_stop " << totalTime;
-    stepBuffer << " -a t0 "<< (float)((i-1)*tStep) << " -a t1 " << (float)(i*tStep) << " -a output_file " << OutputFile << "-" << i;
-    stepBuffer << " -a output_dir " << OutputDir << " -a omega " << omega << " " << macro;
+
+    // GATE 6.2 and >
+    if (oldGATE == 0){
+      stepBuffer << "-a [seed,auto][time_slice," << tStep << "][time_start,0][time_stop," << totalTime << "]";
+      stepBuffer << "[t0,"<< (float)((i-1)*tStep) << "][t1," << (float)(i*tStep) << "][output_file," << OutputFile << "-" << i << "]";
+      stepBuffer << "[output_dir," << OutputDir << "][omega," << omega << "]" << macro_args << " " << macro;
+    }
+    else if (oldGATE == 1){
+    // GATE 6.1
+      stepBuffer << " -a seed auto -a time_slice " << tStep << " -a time_start 0 -a time_stop " << totalTime;
+      stepBuffer << " -a t0 "<< (float)((i-1)*tStep) << " -a t1 " << (float)(i*tStep) << " -a output_file " << OutputFile << "-" << i;
+      stepBuffer << " -a output_dir " << OutputDir << " -a omega " << omega << " " << macro;
+    }
+
     stepBuffer << "\"";
     string step_args = stepBuffer.str();
 
