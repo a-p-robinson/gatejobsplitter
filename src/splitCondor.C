@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
   while(!argumentsFile.eof()){
     getline(argumentsFile,line);
     macro_args.append(line);
-    macro_args.append(" ");
+    //macro_args.append(" ");
   }
 
   // Read condor arguments into string
@@ -268,7 +268,6 @@ int main(int argc, char *argv[])
     stringstream stepBuffer;
     stepBuffer.precision(10);
     stepBuffer << "\"";
-
 
     // GATE 6.2 and >
     if (oldGATE == 0){
