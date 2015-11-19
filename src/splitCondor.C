@@ -268,16 +268,19 @@ int main(int argc, char *argv[])
     stringstream stepBuffer;
     stepBuffer.precision(10);
     stepBuffer << "\"";
-    stepBuffer << macro_args;
+
 
     // GATE 6.2 and >
     if (oldGATE == 0){
-      stepBuffer << "-a [seed,auto][time_slice," << tStep << "][time_start,0][time_stop," << totalTime << "]";
+      stepBuffer << "-a ";
+      stepBuffer << macro_args;
+      stepBuffer << "[seed,auto][time_slice," << tStep << "][time_start,0][time_stop," << totalTime << "]";
       stepBuffer << "[t0,"<< (float)((i-1)*tStep) << "][t1," << (float)(i*tStep) << "][output_file," << OutputFile << "-" << i << "]";
-      stepBuffer << "[output_dir," << OutputDir << "][omega," << omega << "]" << macro_args << " " << macro;
+      stepBuffer << "[output_dir," << OutputDir << "][omega," << omega << "]"  << " " << macro;
     }
     else if (oldGATE == 1){
     // GATE 6.1
+      stepBuffer << macro_args;
       stepBuffer << " -a seed auto -a time_slice " << tStep << " -a time_start 0 -a time_stop " << totalTime;
       stepBuffer << " -a t0 "<< (float)((i-1)*tStep) << " -a t1 " << (float)(i*tStep) << " -a output_file " << OutputFile << "-" << i;
       stepBuffer << " -a output_dir " << OutputDir << " -a omega " << omega << " " << macro;
