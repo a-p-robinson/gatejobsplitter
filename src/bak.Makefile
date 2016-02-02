@@ -4,7 +4,7 @@
 ############################
 
 # Source directory and bin directory
-BIN    = /home/ejp/bin
+BIN    = ../../bin/
 SRC    = .
 
 CCFLAG   = -DLINUX 

@@ -223,6 +223,7 @@ int main(int argc, char *argv[])
   int angleIndex = 1;
 
   // Loop through nSplits...
+  // Is there a reason this is set to start at 1?
   for(int i = 1; i <= nSplits; i++){
 
     // Calculate what angle to use for the split (assumes that the heads only go 180deg during the scan)
@@ -263,6 +264,8 @@ int main(int argc, char *argv[])
 
     // We want to move clockwise so omega needs to be -ve !!!
     omega = -1.0 * omega;
+    // If the camera was set to rotate Counter Clockwise, leave omega +ve !!!
+    // This should be a very rare occurence
 
     // Submit file
     stringstream stepBuffer;
@@ -291,9 +294,9 @@ int main(int argc, char *argv[])
     submitFile << "# Split " << i << ": " << ((i-1)*tStep) << " - " <<  (i*tStep) << "s" << endl;
     submitFile << "Requirements = " << requirements << endl;
     submitFile << "Arguments = " << step_args << endl;
-    submitFile << "Output    = " << InitialDir << "/logs/" << OutputFile << "-" << i << ".out" <<endl; 
-    submitFile << "Error     = " << InitialDir << "/logs/" << OutputFile << "-" << i << ".err" <<endl; 
-    submitFile << "Log       = " << InitialDir << "/logs/" << OutputFile << "-" << i << ".log" <<endl; 
+    submitFile << "Output    = " << InitialDir << "/output/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".out" <<endl; 
+    submitFile << "Error     = " << InitialDir << "/output/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".err" <<endl; 
+    submitFile << "Log       = " << InitialDir << "/output/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".log" <<endl; 
     submitFile << "Queue" << endl;
     submitFile << endl;
 
