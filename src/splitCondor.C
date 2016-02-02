@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 
   // Loop through nSplits...
   // Is there a reason this is set to start at 1?
-  for(int i = 1; i <= nSplits; i++){
+  for(int i = 0; i < nSplits; i++){
 
     // Calculate what angle to use for the split (assumes that the heads only go 180deg during the scan)
     // Default:
@@ -232,25 +232,28 @@ int main(int argc, char *argv[])
       omega = 180.0 / (float)totalTime;
     }
     // nAngles < nSplits (greater than already excluded)
+    // I.e. more than one split per angle
+    // Don't need to change angle every split
     else{
-
-      if( (float)((i-1)*tStep) < ((float)angleIndex * timePerAngle) ){
-	// Still on current angle
+      // If we are still on current angle
+      if( (float)(i*tStep) < ((float)angleIndex * timePerAngle) ){
 	// If we are on the first angle (always 0)
 	if(angleIndex == 1){
 	  currentAngle = 0;
 	  omega = 0;
 	}
+	// Else we are not on the first angle
+	// Need to set omega to a non-zero value
 	else{
 	  currentAngle = (float)(angleIndex-1) * 180.0 / (float)nAngles;
-	  omega = currentAngle / (float)((i-1)*tStep);
+	  omega = currentAngle / (float)(i*tStep);
 	}
       }
+      // Else move to next angle
       else{
-	// Move to next angle
 	angleIndex++;
 	currentAngle = (float)(angleIndex-1) * 180.0 / (float)nAngles;
-	omega = currentAngle / (float)((i-1)*tStep);
+	omega = currentAngle / (float)(i*tStep);
       }  
       //cout << "[" << i << "] " << ((i-1)*tStep) << " " << currentAngle << " " << omega << endl; 
     }
@@ -277,21 +280,21 @@ int main(int argc, char *argv[])
       stepBuffer << "-a ";
       stepBuffer << macro_args;
       stepBuffer << "[seed,auto][time_slice," << tStep << "][time_start,0][time_stop," << totalTime << "]";
-      stepBuffer << "[t0,"<< (float)((i-1)*tStep) << "][t1," << (float)(i*tStep) << "][output_file," << OutputFile << "-" << i << "]";
+      stepBuffer << "[t0,"<< (float)(i*tStep) << "][t1," << (float)((i+1)*tStep) << "][output_file," << OutputFile << "-" << i << "]";
       stepBuffer << "[output_dir," << OutputDir << "][omega," << omega << "]"  << " " << macro;
     }
     else if (oldGATE == 1){
     // GATE 6.1
       stepBuffer << macro_args;
       stepBuffer << " -a seed auto -a time_slice " << tStep << " -a time_start 0 -a time_stop " << totalTime;
-      stepBuffer << " -a t0 "<< (float)((i-1)*tStep) << " -a t1 " << (float)(i*tStep) << " -a output_file " << OutputFile << "-" << i;
+      stepBuffer << " -a t0 "<< (float)(i*tStep) << " -a t1 " << (float)((i+1)*tStep) << " -a output_file " << OutputFile << "-" << i;
       stepBuffer << " -a output_dir " << OutputDir << " -a omega " << omega << " " << macro;
     }
 
     stepBuffer << "\"";
     string step_args = stepBuffer.str();
 
-    submitFile << "# Split " << i << ": " << ((i-1)*tStep) << " - " <<  (i*tStep) << "s" << endl;
+    submitFile << "# Split " << i << ": " << (i*tStep) << " - " <<  ((i+1)*tStep) << "s" << endl;
     submitFile << "Requirements = " << requirements << endl;
     submitFile << "Arguments = " << step_args << endl;
     submitFile << "Output    = " << InitialDir << "/output/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".out" <<endl; 
@@ -306,8 +309,8 @@ int main(int argc, char *argv[])
     splitFile << "Timeslice is: " << tStep << " s" << endl;
     splitFile << "Start time is: 0.0 s " << endl;
     splitFile << "Stop time is: " << totalTime << " s" << endl;
-    splitFile << "Virtual starttime: " << ((i-1)*tStep) << " s" << endl; 
-    splitFile << "Virtual stoptime: " << (i*tStep) << " s" << endl;
+    splitFile << "Virtual starttime: " << (i*tStep) << " s" << endl; 
+    splitFile << "Virtual stoptime: " << ((i+1)*tStep) << " s" << endl;
     splitFile << endl;
 
   } 
