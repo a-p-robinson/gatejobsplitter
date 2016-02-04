@@ -48,19 +48,20 @@ int main(int argc, char *argv[])
   // argv[2] = file with macro arguments in
   // argv[3] = file with condor header in
   // argv[4] = Initial Directory
-  // argv[5] = output filename
-  // argv[6] = total time of simulation
-  // argv[7] = number of splits
-  // argv[8] = Number of angles (optional)
-  // argv[9] = Requirements (optional)
-  // argv[10] = Use old (Gate 6.1) format (optional)
+  // argv[5] = output directory
+  // argv[6] = output filename
+  // argv[7] = total time of simulation
+  // argv[8] = number of splits
+  // argv[9] = Number of angles (optional)
+  // argv[10] = Requirements (optional)
+  // argv[11] = Version of GATE to use
 
   if (argc < 9 || argc > 12){
       cout << "Usage: " << endl;
-      cout << argv[0] << " macro_filename arguments_filename condor_arguments_filename InitialDir output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional) Gate6.1_format=0(optional)" << endl;
+      cout << argv[0] << " macro_filename arguments_filename condor_arguments_filename InitialDir output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional) Gate version (optional)" << endl;
       cout << endl;
       cout << "eg:" << endl;
-      cout << argv[0] << " TOMO.mac args.txt condor.txt /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt)" << endl;
+      cout << argv[0] << " TOMO.mac args.txt condor.txt /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt) (7.0)" << endl;
       exit(1);
     }
 
@@ -157,9 +158,28 @@ int main(int argc, char *argv[])
   }
 
   // Have we asked for GATE6.1 version?
-  int oldGATE = 0;
-  if (argc == 12){
-    int oldGATE = 1;
+  // int oldGATE = 0;
+  // if (argc == 12){
+  //   int oldGATE = 1;
+  // }
+
+  // Check GATE version
+  double GATE_version;
+  if (atof(argv[11]) == 6.1){
+    GATE_version = atof(argv[11]);
+  }
+  else if (atof(argv[11]) == 6.2){
+    GATE_version = atof(argv[11]);
+  }
+  else if (atof(argv[11]) == 7.0){
+    GATE_version = atof(argv[11]);
+  }
+  else if (atof(argv[11]) == 7.1){
+    GATE_version = atof(argv[11]);
+  }
+  else{
+    cout << "GATE version is not set correctly. Options are 6.1, 6.2, 7.0, 7.1" << endl;
+    exit(1);
   }
 
   // Check that the number of splits is a multiple of the total time
@@ -276,14 +296,14 @@ int main(int argc, char *argv[])
     stepBuffer << "\"";
 
     // GATE 6.2 and >
-    if (oldGATE == 0){
+    if (GATE_version != 6.1){
       stepBuffer << "-a ";
       stepBuffer << macro_args;
       stepBuffer << "[seed,auto][time_slice," << tStep << "][time_start,0][time_stop," << totalTime << "]";
       stepBuffer << "[t0,"<< (float)(i*tStep) << "][t1," << (float)((i+1)*tStep) << "][output_file," << OutputFile << "-" << i << "]";
       stepBuffer << "[output_dir," << OutputDir << "][omega," << omega << "]"  << " " << macro;
     }
-    else if (oldGATE == 1){
+    else if (GATE_version == 6.1){
     // GATE 6.1
       stepBuffer << macro_args;
       stepBuffer << " -a seed auto -a time_slice " << tStep << " -a time_start 0 -a time_stop " << totalTime;
@@ -316,6 +336,66 @@ int main(int argc, char *argv[])
   } 
 
   splitFile << "Original Root filename: ./output/" << OutputDir << "/" << OutputFile << "-total" << endl;
+
+  // Write bash shell script to source appropriate version of GATE
+  // and submit job to cluster
+  // Open shell script file
+  string submit_script_fname;
+  submit_script_fname = "Submit-";
+  submit_script_fname.append(OutputFile);
+  submit_script_fname.append(".sh");
+
+  ofstream submitScript(submit_script_fname.c_str());
+  if(!submitScript){
+    cout << "Error opening submit file " << submit_script_fname << endl;
+    exit(1);
+  }
+
+  submitScript << "#!/bin/bash" << endl;
+  submitScript << endl;
+  submitScript << "###########################################################" << endl;
+  submitScript << "# Script to source appropriate version of GATE" << endl;
+  submitScript << "# and submit job to condor" << endl;
+  submitScript << "Created: ";
+  submitScript << ctime(&rawtime);
+  submitScript << "###########################################################" << endl;
+  submitScript << endl;
+
+  // The location of the shell script depends on the version of GATE
+  // This is hardcoded, as everything should end up like
+  // nucpc121
+  if (GATE_version == 6.1){
+    submitScript << "# Source Gate v6.1" << endl;
+    submitScript << "echo \"Will source GATE v6.1 from /opt/gate_v6.1/bin/gateConf.sh\"" << endl;
+    submitScript << "source /opt/gate_v6.1/bin/gateConf.sh" << endl;
+    submitScript << "# Submit jobs to condor" << endl;
+    submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
+    submitScript << "condor_submit submit_filename" << endl;
+  }
+  else if (GATE_version == 6.2){
+    submitScript << "# Source Gate v6.2" << endl;
+    submitScript << "echo \"Will source GATE v6.2 from /opt/gate_v6.2-install/bin/gateConf.sh\"" << endl;
+    submitScript << "source /opt/gate_v6.2-install/bin/gateConf.sh" << endl;
+    submitScript << "# Submit jobs to condor" << endl;
+    submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
+    submitScript << "condor_submit submit_filename" << endl;
+  }
+  else if (GATE_version == 7.0){
+    submitScript << "# Source Gate v7.0" << endl;
+    submitScript << "echo \"Will source GATE v7.0 from /opt/gate_v7.0-install/bin/gateConf.sh\"" << endl;
+    submitScript << "source /opt/gate_v7.0-install/bin/gateConf.sh" << endl;
+    submitScript << "# Submit jobs to condor" << endl;
+    submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
+    submitScript << "condor_submit submit_filename" << endl;
+  }
+  else if (GATE_version == 7.1){
+    submitScript << "# Source Gate v7.1" << endl;
+    submitScript << "echo \"Will source GATE v7.1 from /opt/gate_v7.1-install/bin/gateConf.sh\"" << endl;
+    submitScript << "source /opt/gate_v7.1-install/bin/gateConf.sh" << endl;
+    submitScript << "# Submit jobs to condor" << endl;
+    submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
+    submitScript << "condor_submit submit_filename" << endl;
+  }
 
 }
 
