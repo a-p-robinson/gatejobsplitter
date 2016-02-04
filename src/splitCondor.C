@@ -356,7 +356,7 @@ int main(int argc, char *argv[])
   submitScript << "###########################################################" << endl;
   submitScript << "# Script to source appropriate version of GATE" << endl;
   submitScript << "# and submit job to condor" << endl;
-  submitScript << "Created: ";
+  submitScript << "# Created: ";
   submitScript << ctime(&rawtime);
   submitScript << "###########################################################" << endl;
   submitScript << endl;
@@ -370,7 +370,7 @@ int main(int argc, char *argv[])
     submitScript << "source /opt/gate_v6.1/bin/gateConf.sh" << endl;
     submitScript << "# Submit jobs to condor" << endl;
     submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
-    submitScript << "condor_submit submit_filename" << endl;
+    submitScript << "condor_submit " << submit_filename << endl;
   }
   else if (GATE_version == 6.2){
     submitScript << "# Source Gate v6.2" << endl;
@@ -378,7 +378,7 @@ int main(int argc, char *argv[])
     submitScript << "source /opt/gate_v6.2-install/bin/gateConf.sh" << endl;
     submitScript << "# Submit jobs to condor" << endl;
     submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
-    submitScript << "condor_submit submit_filename" << endl;
+    submitScript << "condor_submit " << submit_filename << endl;
   }
   else if (GATE_version == 7.0){
     submitScript << "# Source Gate v7.0" << endl;
@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
     submitScript << "source /opt/gate_v7.0-install/bin/gateConf.sh" << endl;
     submitScript << "# Submit jobs to condor" << endl;
     submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
-    submitScript << "condor_submit submit_filename" << endl;
+    submitScript << "condor_submit " << submit_filename << endl;
   }
   else if (GATE_version == 7.1){
     submitScript << "# Source Gate v7.1" << endl;
@@ -394,7 +394,7 @@ int main(int argc, char *argv[])
     submitScript << "source /opt/gate_v7.1-install/bin/gateConf.sh" << endl;
     submitScript << "# Submit jobs to condor" << endl;
     submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
-    submitScript << "condor_submit submit_filename" << endl;
+    submitScript << "condor_submit " << submit_filename << endl;
   }
 
 }
