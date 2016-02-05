@@ -37,6 +37,7 @@
 #include <fstream>
 #include <cmath>
 #include <ctime>
+#include <iomanip>
 
 using namespace std;
 
@@ -44,38 +45,59 @@ int main(int argc, char *argv[])
 {
 
   // Check arguments...
-  // argv[1] = macro to run
-  // argv[2] = file with macro arguments in
-  // argv[3] = file with condor header in
-  // argv[4] = Initial Directory
-  // argv[5] = output directory
-  // argv[6] = output filename
-  // argv[7] = total time of simulation
-  // argv[8] = number of splits
-  // argv[9] = Number of angles (optional)
-  // argv[10] = Requirements (optional)
-  // argv[11] = Version of GATE to use
+  // argv[1] = Version of GATE to use 
+  // argv[2] = macro to run
+  // argv[3] = file with macro arguments in
+  // argv[4] = file with condor header in
+  // argv[5] = Initial Directory
+  // argv[6] = output directory
+  // argv[7] = output filename
+  // argv[8] = total time of simulation
+  // argv[9] = number of splits
+  // argv[10] = Number of angles (optional)
+  // argv[11] = Requirements (optional)
 
-  if (argc < 9 || argc > 12){
+  if (argc < 10 || argc > 12){
       cout << "Usage: " << endl;
-      cout << argv[0] << " macro_filename arguments_filename condor_arguments_filename InitialDir output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional) Gate version (optional)" << endl;
+      cout << argv[0] << " Gate version macro_filename arguments_filename condor_arguments_filename InitialDir output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional)" << endl;
       cout << endl;
       cout << "eg:" << endl;
-      cout << argv[0] << " TOMO.mac args.txt condor.txt /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt) (7.0)" << endl;
+      cout << argv[0] << "7.0 TOMO.mac args.txt condor.txt /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt)" << endl;
       exit(1);
     }
 
+  // Check GATE version
+  double GATE_version;
+  if (atof(argv[1]) == 6.1){
+    GATE_version = atof(argv[1]);
+  }
+  else if (atof(argv[1]) == 6.2){
+    GATE_version = atof(argv[1]);
+  }
+  else if (atof(argv[1]) == 7.0){
+    GATE_version = atof(argv[1]);
+  }
+  else if (atof(argv[1]) == 7.1){
+    GATE_version = atof(argv[1]);
+  }
+  else{
+    cout << "GATE version is not set correctly. Options are 6.1, 6.2, 7.0, 7.1" << endl;
+    exit(1);
+  }
+
+  cout << GATE_version << endl;
+
   // Read arguments
-  string macro = argv[1];
+  string macro = argv[2];
 
   // Read macro arguments into string
   // Assume the arguments are one per line
   string macro_args;
   string line;
 
-  ifstream argumentsFile(argv[2]);
+  ifstream argumentsFile(argv[3]);
   if(!argumentsFile){
-    cout << "Error opening arguments file " << argv[2] << endl;
+    cout << "Error opening arguments file " << argv[3] << endl;
     exit(1);
   }
 
@@ -88,29 +110,29 @@ int main(int argc, char *argv[])
   // Read condor arguments into string
   string condor_args;
 
-  ifstream condorFile(argv[3]);
+  ifstream condorFile(argv[4]);
   if(!condorFile){
-    cout << "Error opening condor file " << argv[3] << endl;
+    cout << "Error opening condor file " << argv[4] << endl;
     exit(1);
   }
   stringstream buffer;
   buffer << condorFile.rdbuf();
   condor_args = buffer.str();
 
-  string InitialDir = argv[4];
+  string InitialDir = argv[5];
 
-  string OutputDir = argv[5];
+  string OutputDir = argv[6];
 
-  string OutputFile = argv[6];
-  int totalTime = atoi(argv[7]);
-  int nSplits = atoi(argv[8]);
+  string OutputFile = argv[7];
+  int totalTime = atoi(argv[8]);
+  int nSplits = atoi(argv[9]);
 
   // Set number of angles to match splits unless specified
   int nAngles = nSplits;
 
   // If number of angles is specified....
-  if (argc > 9){
-    nAngles = atoi(argv[9]);
+  if (argc > 10){
+    nAngles = atoi(argv[10]);
     if(nAngles > nSplits){
       cout << "nAngles (" << nAngles << ") is GREATER than nSplits (" << nSplits << ") - this is not possible!" << endl;
       exit(1);
@@ -130,11 +152,11 @@ int main(int argc, char *argv[])
   string requirements;
   ifstream reqFile;
   // If requirements are specified...
-  if (argc == 11){
+  if (argc == 12){
     // Read requirements
-    reqFile.open(argv[10]);
+    reqFile.open(argv[11]);
     if(!reqFile){
-      cout << "Error opening requirements file " << argv[10] << endl;
+      cout << "Error opening requirements file " << argv[11] << endl;
       exit(1);
     }
     //getline(reqFile,requirements);
@@ -163,24 +185,7 @@ int main(int argc, char *argv[])
   //   int oldGATE = 1;
   // }
 
-  // Check GATE version
-  double GATE_version;
-  if (atof(argv[11]) == 6.1){
-    GATE_version = atof(argv[11]);
-  }
-  else if (atof(argv[11]) == 6.2){
-    GATE_version = atof(argv[11]);
-  }
-  else if (atof(argv[11]) == 7.0){
-    GATE_version = atof(argv[11]);
-  }
-  else if (atof(argv[11]) == 7.1){
-    GATE_version = atof(argv[11]);
-  }
-  else{
-    cout << "GATE version is not set correctly. Options are 6.1, 6.2, 7.0, 7.1" << endl;
-    exit(1);
-  }
+
 
   // Check that the number of splits is a multiple of the total time
   // if(totalTime % nSplits != 0){
@@ -353,12 +358,13 @@ int main(int argc, char *argv[])
 
   submitScript << "#!/bin/bash" << endl;
   submitScript << endl;
-  submitScript << "###########################################################" << endl;
-  submitScript << "# Script to source appropriate version of GATE" << endl;
+  submitScript << "#######################################" << endl;
+  submitScript << fixed << setprecision(1);
+  submitScript << "# Script to source GATE version " << GATE_version << endl;
   submitScript << "# and submit job to condor" << endl;
   submitScript << "# Created: ";
   submitScript << ctime(&rawtime);
-  submitScript << "###########################################################" << endl;
+  submitScript << "#######################################" << endl;
   submitScript << endl;
 
   // The location of the shell script depends on the version of GATE
@@ -413,12 +419,13 @@ int main(int argc, char *argv[])
 
   mergeScript << "#!/bin/bash" << endl;
   mergeScript << endl;
-  mergeScript << "###########################################################" << endl;
-  mergeScript << "# Script to source appropriate version of GATE" << endl;
+  mergeScript << "#######################################" << endl;
+  mergeScript << fixed << setprecision(1);
+  mergeScript << "# Script to source GATE version " << GATE_version << endl;
   mergeScript << "# and merge output files" << endl;
   mergeScript << "# Created: ";
   mergeScript << ctime(&rawtime);
-  mergeScript << "###########################################################" << endl;
+  mergeScript << "#######################################" << endl;
   mergeScript << endl;
 
   // The location of the shell script depends on the version of GATE
