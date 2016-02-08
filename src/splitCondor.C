@@ -85,8 +85,6 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  cout << GATE_version << endl;
-
   // Read arguments
   string macro = argv[2];
 
@@ -463,6 +461,12 @@ int main(int argc, char *argv[])
     mergeScript << "echo \"Will merge " << submit_filename << " output files\"" << endl;
     mergeScript << "gjm " << submit_filename << endl;
   }
+
+  // Close files
+  submitFile.close();
+  splitFile.close();
+  submitScript.close();
+  mergeScript.close();
 
 }
 
