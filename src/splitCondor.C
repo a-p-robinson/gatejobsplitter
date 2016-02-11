@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
   // If number of angles is specified....
   if (argc > 11){
-    nAngles = atoi(argv[10]);
+    nAngles = atoi(argv[11]);
     if(nAngles > nSplits){
       cout << "nAngles (" << nAngles << ") is GREATER than nSplits (" << nSplits << ") - this is not possible!" << endl;
       exit(1);
