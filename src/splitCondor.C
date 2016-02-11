@@ -60,10 +60,10 @@ int main(int argc, char *argv[])
 
   if (argc < 11 || argc > 13){
       cout << "Usage: " << endl;
-      cout << argv[0] << " Gate version macro_filename arguments_filename condor_arguments_filename InitialDir output_location output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional)" << endl;
+      cout << argv[0] << " Gate_version macro_filename arguments_filename condor_arguments_filename InitialDir output_location output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional)" << endl;
       cout << endl;
       cout << "eg:" << endl;
-      cout << argv[0] << "7.0 TOMO.mac args.txt condor.txt $PWD RAID /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt)" << endl;
+      cout << argv[0] << "7.0 TOMO.mac args.txt condor.txt $PWD output /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt)" << endl;
       exit(1);
     }
 
