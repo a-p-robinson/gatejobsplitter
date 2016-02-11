@@ -120,26 +120,7 @@ int main(int argc, char *argv[])
 
   string InitialDir = argv[5];
 
-  string OutputLoc;
-  string locBuf = argv[6];
-  // Check valid location has been provided
-  // and set Output location
-  if (locBuf.compare("RAID") == 0){
-    OutputLoc = "output";
-  }
-  else if (locBuf.compare("HOME_DIR") == 0){
-    OutputLoc = "output_local";
-  }
-  else if (locBuf.compare("LOCAL_DISK") != 0){
-    OutputLoc = "output_local_disk";
-  }
-  else{
-    cout << "Output location is not set correctly. Options are:" << endl;
-    cout << "RAID -> Output is stored on RAID array, requires symlink \"output\"" << endl;
-    cout << "HOME_DIR -> Output is stored in home directory, requires directory \"output_local\"" << endl;
-    cout << "LOCAL_DISK -> Output is stored on local disk, requires symlink \"output_local_disk\"" << endl;
-    exit(1);
-  }
+  string OutputLoc = argv[6];
 
   string OutputDir = argv[7];
 
