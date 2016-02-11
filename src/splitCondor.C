@@ -50,19 +50,20 @@ int main(int argc, char *argv[])
   // argv[3] = file with macro arguments in
   // argv[4] = file with condor header in
   // argv[5] = Initial Directory
-  // argv[6] = output directory
-  // argv[7] = output filename
-  // argv[8] = total time of simulation
-  // argv[9] = number of splits
-  // argv[10] = Number of angles (optional)
-  // argv[11] = Requirements (optional)
+  // argv[6] = Output Location (RAID, home directory, local disk)
+  // argv[7] = output directory
+  // argv[8] = output filename
+  // argv[9] = total time of simulation
+  // argv[10] = number of splits
+  // argv[11] = Number of angles (optional)
+  // argv[12] = Requirements (optional)
 
-  if (argc < 10 || argc > 12){
+  if (argc < 11 || argc > 13){
       cout << "Usage: " << endl;
-      cout << argv[0] << " Gate version macro_filename arguments_filename condor_arguments_filename InitialDir output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional)" << endl;
+      cout << argv[0] << " Gate version macro_filename arguments_filename condor_arguments_filename InitialDir output_location output_dir output_filename total_sim_time number_of_splits number_of_angles(optional) machine_requirements_filename(optional)" << endl;
       cout << endl;
       cout << "eg:" << endl;
-      cout << argv[0] << "7.0 TOMO.mac args.txt condor.txt /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt)" << endl;
+      cout << argv[0] << "7.0 TOMO.mac args.txt condor.txt $PWD RAID /home/me/SPECT/ TOMO_3MBq scan1 600 30 (30) (reqs.txt)" << endl;
       exit(1);
     }
 
@@ -119,17 +120,38 @@ int main(int argc, char *argv[])
 
   string InitialDir = argv[5];
 
-  string OutputDir = argv[6];
+  string OutputLoc;
+  string locBuf = argv[6];
+  // Check valid location has been provided
+  // and set Output location
+  if (locBuf.compare("RAID") == 0){
+    OutputLoc = "output";
+  }
+  else if (locBuf.compare("HOME_DIR") == 0){
+    OutputLoc = "output_local";
+  }
+  else if (locBuf.compare("LOCAL_DISK") != 0){
+    OutputLoc = "output_local_disk";
+  }
+  else{
+    cout << "Output location is not set correctly. Options are:" << endl;
+    cout << "RAID -> Output is stored on RAID array, requires symlink \"output\"" << endl;
+    cout << "HOME_DIR -> Output is stored in home directory, requires directory \"output_local\"" << endl;
+    cout << "LOCAL_DISK -> Output is stored on local disk, requires symlink \"output_local_disk\"" << endl;
+    exit(1);
+  }
 
-  string OutputFile = argv[7];
-  int totalTime = atoi(argv[8]);
-  int nSplits = atoi(argv[9]);
+  string OutputDir = argv[7];
+
+  string OutputFile = argv[8];
+  int totalTime = atoi(argv[9]);
+  int nSplits = atoi(argv[10]);
 
   // Set number of angles to match splits unless specified
   int nAngles = nSplits;
 
   // If number of angles is specified....
-  if (argc > 10){
+  if (argc > 11){
     nAngles = atoi(argv[10]);
     if(nAngles > nSplits){
       cout << "nAngles (" << nAngles << ") is GREATER than nSplits (" << nSplits << ") - this is not possible!" << endl;
@@ -150,11 +172,11 @@ int main(int argc, char *argv[])
   string requirements;
   ifstream reqFile;
   // If requirements are specified...
-  if (argc == 12){
+  if (argc == 13){
     // Read requirements
-    reqFile.open(argv[11]);
+    reqFile.open(argv[12]);
     if(!reqFile){
-      cout << "Error opening requirements file " << argv[11] << endl;
+      cout << "Error opening requirements file " << argv[12] << endl;
       exit(1);
     }
     //getline(reqFile,requirements);
@@ -320,15 +342,15 @@ int main(int argc, char *argv[])
     submitFile << "# Split " << i << ": " << (i*tStep) << " - " <<  ((i+1)*tStep) << "s" << endl;
     submitFile << "Requirements = " << requirements << endl;
     submitFile << "Arguments = " << step_args << endl;
-    submitFile << "Output    = " << InitialDir << "/output/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".out" <<endl; 
-    submitFile << "Error     = " << InitialDir << "/output/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".err" <<endl; 
-    submitFile << "Log       = " << InitialDir << "/output/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".log" <<endl; 
+    submitFile << "Output    = " << InitialDir << "/" << OutputLoc << "/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".out" <<endl; 
+    submitFile << "Error     = " << InitialDir << "/" << OutputLoc << "/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".err" <<endl; 
+    submitFile << "Log       = " << InitialDir << "/" << OutputLoc << "/" << OutputDir << "/Logs/" << OutputFile << "-" << i << ".log" <<endl; 
     submitFile << "Queue" << endl;
     submitFile << endl;
 
     // Split file
-    splitFile << "Root filename: ./output/" << OutputDir << "/ROOT/" << OutputFile << "-" << i << endl;
-    splitFile << "interfile filename: ./output/" << OutputDir << "/InterFile/"  << OutputFile << "-" << i << endl;
+    splitFile << "Root filename: ./" << OutputLoc << "/" << OutputDir << "/ROOT/" << OutputFile << "-" << i << endl;
+    splitFile << "interfile filename: ./" << OutputLoc << "/" << OutputDir << "/InterFile/"  << OutputFile << "-" << i << endl;
     splitFile << "Timeslice is: " << tStep << " s" << endl;
     splitFile << "Start time is: 0.0 s " << endl;
     splitFile << "Stop time is: " << totalTime << " s" << endl;
@@ -338,7 +360,7 @@ int main(int argc, char *argv[])
 
   } 
 
-  splitFile << "Original Root filename: ./output/" << OutputDir << "/" << OutputFile << "-total" << endl;
+  splitFile << "Original Root filename: ./" << OutputLoc << "/" << OutputDir << "/" << OutputFile << "-total" << endl;
 
   // Write bash shell script to source appropriate version of GATE
   // and submit job to cluster
