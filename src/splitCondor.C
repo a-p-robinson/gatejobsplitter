@@ -437,32 +437,32 @@ int main(int argc, char *argv[])
     mergeScript << "echo \"Will source GATE v6.1 from /opt/gate_v6.1/bin/gateConf.sh\"" << endl;
     mergeScript << "source /opt/gate_v6.1/bin/gateConf.sh" << endl;
     mergeScript << "# Merge root files" << endl;
-    mergeScript << "echo \"Will merge " << submit_filename << " output files\"" << endl;
-    mergeScript << "gjm " << submit_filename << endl;
+    mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
+    mergeScript << "gjm " << split_filename << endl;
   }
   else if (GATE_version == 6.2){
     mergeScript << "# Source Gate v6.2" << endl;
     mergeScript << "echo \"Will source GATE v6.2 from /opt/gate_v6.2-install/bin/gateConf.sh\"" << endl;
     mergeScript << "source /opt/gate_v6.2-install/bin/gateConf.sh" << endl;
     mergeScript << "# Merge root files" << endl;
-    mergeScript << "echo \"Will merge " << submit_filename << " output files\"" << endl;
-    mergeScript << "gjm " << submit_filename << endl;
+    mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
+    mergeScript << "gjm " << split_filename << endl;
   }
   else if (GATE_version == 7.0){
     mergeScript << "# Source Gate v7.0" << endl;
     mergeScript << "echo \"Will source GATE v7.0 from /opt/gate_v7.0-install/bin/gateConf.sh\"" << endl;
     mergeScript << "source /opt/gate_v7.0-install/bin/gateConf.sh" << endl;
     mergeScript << "# Merge root files" << endl;
-    mergeScript << "echo \"Will merge " << submit_filename << " output files\"" << endl;
-    mergeScript << "gjm " << submit_filename << endl;
+    mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
+    mergeScript << "gjm " << split_filename << endl;
   }
   else if (GATE_version == 7.1){
     mergeScript << "# Source Gate v7.1" << endl;
     mergeScript << "echo \"Will source GATE v7.1 from /opt/gate_v7.1-install/bin/gateConf.sh\"" << endl;
     mergeScript << "source /opt/gate_v7.1-install/bin/gateConf.sh" << endl;
     mergeScript << "# Merge root files" << endl;
-    mergeScript << "echo \"Will merge " << submit_filename << " output files\"" << endl;
-    mergeScript << "gjm " << submit_filename << endl;
+    mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
+    mergeScript << "gjm " << split_filename << endl;
   }
 
   // Close files
