@@ -1,6 +1,6 @@
 /*######################################################
   # splitCondor.C                                      #
-  # Version: 0.2                                       #
+  # Version: 2.0                                       #
   #                                                    #
   # Create condor submit file for specified macro      #
   #                                                    #
@@ -10,7 +10,6 @@
   #                                                    #
   # Macro arguments and condor arguments should be     #
   # in a text file one per line.                       #
-  #                                                    #
   # Macro arguments should start with -a               #
   #                                                    #
   # Initial directory should contain ./macros/         #
@@ -27,8 +26,8 @@
   # This requires a scanner macro with omega as a      #
   # parameter.                                         #
   #                                                    #
-  # APR: 26/10/11                                      #
-  # andrew.paul.robinson@manchester.ac.uk              #
+  # EJP / APR: 16/05/17                                #
+  # andrew.robinson@npl.co.uk                          #
   ######################################################*/
 
 #include <cstdlib>
@@ -81,8 +80,11 @@ int main(int argc, char *argv[])
   else if (atof(argv[1]) == 7.1){
     GATE_version = atof(argv[1]);
   }
+  else if (atof(argv[1]) == 7.2){
+    GATE_version = atof(argv[1]);
+  }
   else{
-    cout << "GATE version is not set correctly. Options are 6.1, 6.2, 7.0, 7.1" << endl;
+    cout << "GATE version is not set correctly. Options are 6.1, 6.2, 7.0, 7.1, 7.2" << endl;
     exit(1);
   }
 
@@ -160,7 +162,6 @@ int main(int argc, char *argv[])
       cout << "Error opening requirements file " << argv[12] << endl;
       exit(1);
     }
-    //getline(reqFile,requirements);
 
     // First line is the number of requirements
     getline(reqFile,line);
@@ -179,20 +180,6 @@ int main(int argc, char *argv[])
     nReqs = 1;
     requirements = "Arch == \"INTEL\" || Arch == \"x86_64\"";
   }
-
-  // Have we asked for GATE6.1 version?
-  // int oldGATE = 0;
-  // if (argc == 12){
-  //   int oldGATE = 1;
-  // }
-
-
-
-  // Check that the number of splits is a multiple of the total time
-  // if(totalTime % nSplits != 0){
-  //   cout << "Total time is NOT a multiple of nSplits" << endl;
-  //   exit(1);
-  // }
 
   float tStep = (float)totalTime / (float)nSplits;
 
@@ -301,7 +288,7 @@ int main(int argc, char *argv[])
     stepBuffer.precision(10);
     stepBuffer << "\"";
 
-    // GATE 6.2 and >
+    // GATE 6.2 and higher
     if (GATE_version != 6.1){
       stepBuffer << "-a ";
       stepBuffer << macro_args;
@@ -343,133 +330,139 @@ int main(int argc, char *argv[])
 
   splitFile << "Original Root filename: ./" << OutputLoc << "/" << OutputDir << "/" << OutputFile << "-total" << endl;
 
-  // Write bash shell script to source appropriate version of GATE
-  // and submit job to cluster
-  // Open shell script file
-  string submit_script_fname;
-  submit_script_fname = "Submit-";
-  submit_script_fname.append(OutputFile);
-  submit_script_fname.append(".sh");
 
-  ofstream submitScript(submit_script_fname.c_str());
-  if(!submitScript){
-    cout << "Error opening submit file " << submit_script_fname << endl;
-    exit(1);
-  }
+  // -------------------------------------------------------------------------------------
+  // APR: Don't really need to generate these shell scripts - they seem a bit redundant
 
-  submitScript << "#!/bin/bash" << endl;
-  submitScript << endl;
-  submitScript << "#######################################" << endl;
-  submitScript << fixed << setprecision(1);
-  submitScript << "# Script to source GATE version " << GATE_version << endl;
-  submitScript << "# and submit job to condor" << endl;
-  submitScript << "# Created: ";
-  submitScript << ctime(&rawtime);
-  submitScript << "#######################################" << endl;
-  submitScript << endl;
+  // // Write bash shell script to source appropriate version of GATE
+  // // and submit job to cluster
+  // // Open shell script file
+  // string submit_script_fname;
+  // submit_script_fname = "Submit-";
+  // submit_script_fname.append(OutputFile);
+  // submit_script_fname.append(".sh");
 
-  // The location of the shell script depends on the version of GATE
-  // This is hardcoded, as everything should end up like
-  // nucpc121
-  if (GATE_version == 6.1){
-    submitScript << "# Source Gate v6.1" << endl;
-    submitScript << "echo \"Will source GATE v6.1 from /opt/gate_v6.1/bin/gateConf.sh\"" << endl;
-    submitScript << "source /opt/gate_v6.1/bin/gateConf.sh" << endl;
-    submitScript << "# Submit jobs to condor" << endl;
-    submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
-    submitScript << "condor_submit " << submit_filename << endl;
-  }
-  else if (GATE_version == 6.2){
-    submitScript << "# Source Gate v6.2" << endl;
-    submitScript << "echo \"Will source GATE v6.2 from /opt/gate_v6.2-install/bin/gateConf.sh\"" << endl;
-    submitScript << "source /opt/gate_v6.2-install/bin/gateConf.sh" << endl;
-    submitScript << "# Submit jobs to condor" << endl;
-    submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
-    submitScript << "condor_submit " << submit_filename << endl;
-  }
-  else if (GATE_version == 7.0){
-    submitScript << "# Source Gate v7.0" << endl;
-    submitScript << "echo \"Will source GATE v7.0 from /opt/gate_v7.0-install/bin/gateConf.sh\"" << endl;
-    submitScript << "source /opt/gate_v7.0-install/bin/gateConf.sh" << endl;
-    submitScript << "# Submit jobs to condor" << endl;
-    submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
-    submitScript << "condor_submit " << submit_filename << endl;
-  }
-  else if (GATE_version == 7.1){
-    submitScript << "# Source Gate v7.1" << endl;
-    submitScript << "echo \"Will source GATE v7.1 from /opt/gate_v7.1-install/bin/gateConf.sh\"" << endl;
-    submitScript << "source /opt/gate_v7.1-install/bin/gateConf.sh" << endl;
-    submitScript << "# Submit jobs to condor" << endl;
-    submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
-    submitScript << "condor_submit " << submit_filename << endl;
-  }
+  // ofstream submitScript(submit_script_fname.c_str());
+  // if(!submitScript){
+  //   cout << "Error opening submit file " << submit_script_fname << endl;
+  //   exit(1);
+  // }
 
-  // Write bash shell script to source appropriate version of GATE
-  // and merge root files
-  // Open shell script file
-  string merge_script_fname;
-  merge_script_fname = "Merge-";
-  merge_script_fname.append(OutputFile);
-  merge_script_fname.append(".sh");
+  // submitScript << "#!/bin/bash" << endl;
+  // submitScript << endl;
+  // submitScript << "#######################################" << endl;
+  // submitScript << fixed << setprecision(1);
+  // submitScript << "# Script to source GATE version " << GATE_version << endl;
+  // submitScript << "# and submit job to condor" << endl;
+  // submitScript << "# Created: ";
+  // submitScript << ctime(&rawtime);
+  // submitScript << "#######################################" << endl;
+  // submitScript << endl;
 
-  ofstream mergeScript(merge_script_fname.c_str());
-  if(!mergeScript){
-    cout << "Error opening merge file " << merge_script_fname << endl;
-    exit(1);
-  }
+  // // The location of the shell script depends on the version of GATE
+  // // This is hardcoded, as everything should end up like
+  // // nucpc121
+  // if (GATE_version == 6.1){
+  //   submitScript << "# Source Gate v6.1" << endl;
+  //   submitScript << "echo \"Will source GATE v6.1 from /opt/gate_v6.1/bin/gateConf.sh\"" << endl;
+  //   submitScript << "source /opt/gate_v6.1/bin/gateConf.sh" << endl;
+  //   submitScript << "# Submit jobs to condor" << endl;
+  //   submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
+  //   submitScript << "condor_submit " << submit_filename << endl;
+  // }
+  // else if (GATE_version == 6.2){
+  //   submitScript << "# Source Gate v6.2" << endl;
+  //   submitScript << "echo \"Will source GATE v6.2 from /opt/gate_v6.2-install/bin/gateConf.sh\"" << endl;
+  //   submitScript << "source /opt/gate_v6.2-install/bin/gateConf.sh" << endl;
+  //   submitScript << "# Submit jobs to condor" << endl;
+  //   submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
+  //   submitScript << "condor_submit " << submit_filename << endl;
+  // }
+  // else if (GATE_version == 7.0){
+  //   submitScript << "# Source Gate v7.0" << endl;
+  //   submitScript << "echo \"Will source GATE v7.0 from /opt/gate_v7.0-install/bin/gateConf.sh\"" << endl;
+  //   submitScript << "source /opt/gate_v7.0-install/bin/gateConf.sh" << endl;
+  //   submitScript << "# Submit jobs to condor" << endl;
+  //   submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
+  //   submitScript << "condor_submit " << submit_filename << endl;
+  // }
+  // else if (GATE_version == 7.1){
+  //   submitScript << "# Source Gate v7.1" << endl;
+  //   submitScript << "echo \"Will source GATE v7.1 from /opt/gate_v7.1-install/bin/gateConf.sh\"" << endl;
+  //   submitScript << "source /opt/gate_v7.1-install/bin/gateConf.sh" << endl;
+  //   submitScript << "# Submit jobs to condor" << endl;
+  //   submitScript << "echo \"Will submit " << submit_filename << " to condor\"" << endl;
+  //   submitScript << "condor_submit " << submit_filename << endl;
+  // }
 
-  mergeScript << "#!/bin/bash" << endl;
-  mergeScript << endl;
-  mergeScript << "#######################################" << endl;
-  mergeScript << fixed << setprecision(1);
-  mergeScript << "# Script to source GATE version " << GATE_version << endl;
-  mergeScript << "# and merge output files" << endl;
-  mergeScript << "# Created: ";
-  mergeScript << ctime(&rawtime);
-  mergeScript << "#######################################" << endl;
-  mergeScript << endl;
+  // // Write bash shell script to source appropriate version of GATE
+  // // and merge root files
+  // // Open shell script file
+  // string merge_script_fname;
+  // merge_script_fname = "Merge-";
+  // merge_script_fname.append(OutputFile);
+  // merge_script_fname.append(".sh");
 
-  // The location of the shell script depends on the version of GATE
-  // This is hardcoded, as everything should end up like
-  // nucpc121
-  if (GATE_version == 6.1){
-    mergeScript << "# Source Gate v6.1" << endl;
-    mergeScript << "echo \"Will source GATE v6.1 from /opt/gate_v6.1/bin/gateConf.sh\"" << endl;
-    mergeScript << "source /opt/gate_v6.1/bin/gateConf.sh" << endl;
-    mergeScript << "# Merge root files" << endl;
-    mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
-    mergeScript << "gjm " << split_filename << endl;
-  }
-  else if (GATE_version == 6.2){
-    mergeScript << "# Source Gate v6.2" << endl;
-    mergeScript << "echo \"Will source GATE v6.2 from /opt/gate_v6.2-install/bin/gateConf.sh\"" << endl;
-    mergeScript << "source /opt/gate_v6.2-install/bin/gateConf.sh" << endl;
-    mergeScript << "# Merge root files" << endl;
-    mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
-    mergeScript << "gjm " << split_filename << endl;
-  }
-  else if (GATE_version == 7.0){
-    mergeScript << "# Source Gate v7.0" << endl;
-    mergeScript << "echo \"Will source GATE v7.0 from /opt/gate_v7.0-install/bin/gateConf.sh\"" << endl;
-    mergeScript << "source /opt/gate_v7.0-install/bin/gateConf.sh" << endl;
-    mergeScript << "# Merge root files" << endl;
-    mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
-    mergeScript << "gjm " << split_filename << endl;
-  }
-  else if (GATE_version == 7.1){
-    mergeScript << "# Source Gate v7.1" << endl;
-    mergeScript << "echo \"Will source GATE v7.1 from /opt/gate_v7.1-install/bin/gateConf.sh\"" << endl;
-    mergeScript << "source /opt/gate_v7.1-install/bin/gateConf.sh" << endl;
-    mergeScript << "# Merge root files" << endl;
-    mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
-    mergeScript << "gjm " << split_filename << endl;
-  }
+  // ofstream mergeScript(merge_script_fname.c_str());
+  // if(!mergeScript){
+  //   cout << "Error opening merge file " << merge_script_fname << endl;
+  //   exit(1);
+  // }
+
+  // mergeScript << "#!/bin/bash" << endl;
+  // mergeScript << endl;
+  // mergeScript << "#######################################" << endl;
+  // mergeScript << fixed << setprecision(1);
+  // mergeScript << "# Script to source GATE version " << GATE_version << endl;
+  // mergeScript << "# and merge output files" << endl;
+  // mergeScript << "# Created: ";
+  // mergeScript << ctime(&rawtime);
+  // mergeScript << "#######################################" << endl;
+  // mergeScript << endl;
+
+  // // The location of the shell script depends on the version of GATE
+  // // This is hardcoded, as everything should end up like
+  // // nucpc121
+  // if (GATE_version == 6.1){
+  //   mergeScript << "# Source Gate v6.1" << endl;
+  //   mergeScript << "echo \"Will source GATE v6.1 from /opt/gate_v6.1/bin/gateConf.sh\"" << endl;
+  //   mergeScript << "source /opt/gate_v6.1/bin/gateConf.sh" << endl;
+  //   mergeScript << "# Merge root files" << endl;
+  //   mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
+  //   mergeScript << "gjm " << split_filename << endl;
+  // }
+  // else if (GATE_version == 6.2){
+  //   mergeScript << "# Source Gate v6.2" << endl;
+  //   mergeScript << "echo \"Will source GATE v6.2 from /opt/gate_v6.2-install/bin/gateConf.sh\"" << endl;
+  //   mergeScript << "source /opt/gate_v6.2-install/bin/gateConf.sh" << endl;
+  //   mergeScript << "# Merge root files" << endl;
+  //   mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
+  //   mergeScript << "gjm " << split_filename << endl;
+  // }
+  // else if (GATE_version == 7.0){
+  //   mergeScript << "# Source Gate v7.0" << endl;
+  //   mergeScript << "echo \"Will source GATE v7.0 from /opt/gate_v7.0-install/bin/gateConf.sh\"" << endl;
+  //   mergeScript << "source /opt/gate_v7.0-install/bin/gateConf.sh" << endl;
+  //   mergeScript << "# Merge root files" << endl;
+  //   mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
+  //   mergeScript << "gjm " << split_filename << endl;
+  // }
+  // else if (GATE_version == 7.1){
+  //   mergeScript << "# Source Gate v7.1" << endl;
+  //   mergeScript << "echo \"Will source GATE v7.1 from /opt/gate_v7.1-install/bin/gateConf.sh\"" << endl;
+  //   mergeScript << "source /opt/gate_v7.1-install/bin/gateConf.sh" << endl;
+  //   mergeScript << "# Merge root files" << endl;
+  //   mergeScript << "echo \"Will merge " << split_filename << " output files\"" << endl;
+  //   mergeScript << "gjm " << split_filename << endl;
+  // }
+  //
+  // submitScript.close();
+  // mergeScript.close();
+  // -------------------------------------------------------------------------------------
 
   // Close files
   submitFile.close();
   splitFile.close();
-  submitScript.close();
-  mergeScript.close();
 
 }
 
