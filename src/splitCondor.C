@@ -1,6 +1,6 @@
 /*######################################################
   # splitCondor.C                                      #
-  # Version: 2.0                                       #
+  # Version: 2.1                                       #
   #                                                    #
   # Create condor submit file for specified macro      #
   #                                                    #
@@ -38,11 +38,19 @@
 #include <ctime>
 #include <iomanip>
 
+#include <time.h>
+#include <stdlib.h>
+
+
+
 using namespace std;
 
 int main(int argc, char *argv[])
 {
 
+  // Added the option to generate peusdo random seeds (quick and dirty)
+  srand(time(NULL));
+  
   // Check arguments...
   // argv[1] = Version of GATE to use 
   // argv[2] = macro to run
@@ -288,18 +296,37 @@ int main(int argc, char *argv[])
     stepBuffer.precision(10);
     stepBuffer << "\"";
 
+    // Adding option to manually specify seed
+    // This is to fix a problem with GATE 7.2 where the auto seed does not work reliably
+    // (initially hard code the option)
+    stringstream seed_options;
+    int seed = 2;
+    if (seed == 0){
+      // GATE auto seed
+      seed_options << "auto";
+    }
+    if (seed == 1){
+      // Sequential seeds
+      seed_options << i;
+    }
+    if (seed == 2){
+      // Fixed Random Seeds
+      int r = rand();
+      seed_options << r;
+    }
+    
     // GATE 6.2 and higher
     if (GATE_version != 6.1){
       stepBuffer << "-a ";
       stepBuffer << macro_args;
-      stepBuffer << "[seed,auto][time_slice," << tStep << "][time_start,0][time_stop," << totalTime << "]";
+      stepBuffer << "[seed," << seed_options.str() << "][time_slice," << tStep << "][time_start,0][time_stop," << totalTime << "]";
       stepBuffer << "[t0,"<< (float)(i*tStep) << "][t1," << (float)((i+1)*tStep) << "][output_file," << OutputFile << "-" << i << "]";
       stepBuffer << "[output_dir," << OutputDir << "][omega," << omega << "]"  << " " << macro;
     }
     else if (GATE_version == 6.1){
     // GATE 6.1
       stepBuffer << macro_args;
-      stepBuffer << " -a seed auto -a time_slice " << tStep << " -a time_start 0 -a time_stop " << totalTime;
+      stepBuffer << " -a seed " << seed_options.str() << " -a time_slice " << tStep << " -a time_start 0 -a time_stop " << totalTime;
       stepBuffer << " -a t0 "<< (float)(i*tStep) << " -a t1 " << (float)((i+1)*tStep) << " -a output_file " << OutputFile << "-" << i;
       stepBuffer << " -a output_dir " << OutputDir << " -a omega " << omega << " " << macro;
     }
